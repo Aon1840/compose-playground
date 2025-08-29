@@ -7,6 +7,7 @@ jobs:
   example:
     runs-on: ubuntu-latest
     steps:
+      # ✅ React ที่ comment เดิม
       - name: Add reaction
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -15,10 +16,15 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
 
-      - name: Print PR Info
-        run: |
-          echo "PR Number: ${{ github.event.client_payload.github.payload.issue.number }}"
-          echo "PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}"
-          echo "Repo: ${{ github.event.client_payload.github.payload.repository.full_name }}"
-          echo "Comment: ${{ github.event.client_payload.github.payload.comment.body }}"
-          echo "Sender: ${{ github.event.client_payload.github.actor.login }}"
+      # ✅ สร้าง comment ใหม่
+      - name: Create new comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+          body: |
+            🚀 Jenkins rebuild triggered!
+            - PR: #${{ github.event.client_payload.github.payload.issue.number }}
+            - By: @${{ github.event.client_payload.github.actor.login }}
+            - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
