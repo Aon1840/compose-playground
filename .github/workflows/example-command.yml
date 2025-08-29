@@ -13,3 +13,14 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
+  rebuild:
+    if: github.event.issue.pull_request != '' && startsWith(github.event.comment.body, '/example')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print PR Info
+        run: |
+          echo "PR Number: ${{ github.event.issue.number }}"
+          echo "PR URL: ${{ github.event.issue.pull_request.url }}"
+          echo "Repo: ${{ github.repository }}"
+          echo "Comment: ${{ github.event.comment.body }}"
+          echo "Sender: ${{ github.actor }}"
