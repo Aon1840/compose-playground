@@ -16,7 +16,7 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
 
-      # ✅ สร้าง comment ใหม่
+      # ✅ สร้าง comment ใหม่ (บอกว่า Jenkins rebuild)
       - name: Create new comment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -29,28 +29,32 @@ jobs:
             - By: @${{ github.event.client_payload.github.actor.login }}
             - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
 
-      - name: Trigger Jenkins (Mock Data)
-        run: |
-          curl -X POST "${{ secrets.JENKINS_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{
+      # ✅ Comment ข้อมูลที่ Jenkins ต้องการ (genericVariables)
+      - name: Post Jenkins Variables
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+          body: |
+            {
               "action": "reopened",
-              "number": 50,
+              "number": ${{ github.event.client_payload.github.payload.issue.number }},
               "pull_request": {
-                "title": "[RL1-36669] : Mule Account 2",
-                "html_url": "https://github.com/scb-tx1416-fasteasy-frontend/fasteasy-android/pull/50",
+                "title": "${{ github.event.client_payload.github.payload.issue.title }}",
+                "html_url": "${{ github.event.client_payload.github.payload.issue.pull_request.url }}",
                 "head": {
-                  "ref": "feature/fastPayMuleAccount",
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.head.ref }}",
                   "repo": {
-                    "name": "fasteasy-android",
-                    "clone_url": "https://github.com/scb-tx1416-fasteasy-frontend/fasteasy-android.git"
+                    "name": "${{ github.event.client_payload.github.payload.repository.name }}",
+                    "clone_url": "${{ github.event.client_payload.github.payload.repository.clone_url }}"
                   }
                 },
                 "base": {
-                  "ref": "release/3.96.0"
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.base.ref }}"
                 }
               },
               "repository": {
-                "full_name": "scb-tx1416-fasteasy-frontend/fasteasy-android"
+                "full_name": "${{ github.event.client_payload.github.payload.repository.full_name }}"
               }
-            }'
+            }
