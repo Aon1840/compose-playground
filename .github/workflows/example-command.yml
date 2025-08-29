@@ -7,7 +7,6 @@ jobs:
   example:
     runs-on: ubuntu-latest
     steps:
-      # ✅ React ที่ comment เดิม
       - name: Add reaction
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -16,7 +15,6 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
 
-      # ✅ สร้าง comment ใหม่
       - name: Create new comment
         uses: peter-evans/create-or-update-comment@v4
         with:
