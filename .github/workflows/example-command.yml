@@ -28,3 +28,29 @@ jobs:
             - PR: #${{ github.event.client_payload.github.payload.issue.number }}
             - By: @${{ github.event.client_payload.github.actor.login }}
             - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
+
+      - name: Trigger Jenkins (Mock Data)
+        run: |
+          curl -X POST "${{ secrets.JENKINS_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "action": "reopened",
+              "number": 50,
+              "pull_request": {
+                "title": "[RL1-36669] : Mule Account 2",
+                "html_url": "https://github.com/scb-tx1416-fasteasy-frontend/fasteasy-android/pull/50",
+                "head": {
+                  "ref": "feature/fastPayMuleAccount",
+                  "repo": {
+                    "name": "fasteasy-android",
+                    "clone_url": "https://github.com/scb-tx1416-fasteasy-frontend/fasteasy-android.git"
+                  }
+                },
+                "base": {
+                  "ref": "release/3.96.0"
+                }
+              },
+              "repository": {
+                "full_name": "scb-tx1416-fasteasy-frontend/fasteasy-android"
+              }
+            }'
