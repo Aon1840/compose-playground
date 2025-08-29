@@ -30,45 +30,28 @@ jobs:
             - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
 
       # ✅ Comment ข้อมูลที่ Jenkins ต้องการ (genericVariables)
-      - name: Get PR Info
-        id: prinfo
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.PAT }}
-          script: |
-            const prNumber = context.payload.client_payload.github.payload.issue.number;
-            const { data: pr } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-            core.setOutput("head_ref", pr.head.ref);
-            core.setOutput("base_ref", pr.base.ref);
-            core.setOutput("title", pr.title);
-            core.setOutput("html_url", pr.html_url);
-
       - name: Post Jenkins Variables
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.PAT }}
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
           body: |
             {
               "action": "reopened",
               "number": ${{ github.event.client_payload.github.payload.issue.number }},
               "pull_request": {
-                "title": "${{ steps.prinfo.outputs.title }}",
-                "html_url": "${{ steps.prinfo.outputs.html_url }}",
+                "title": "${{ github.event.client_payload.github.payload.issue.title }}",
+                "html_url": "${{ github.event.client_payload.github.payload.issue.pull_request.url }}",
                 "head": {
-                  "ref": "${{ steps.prinfo.outputs.head_ref }}",
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.head.ref }}",
                   "repo": {
                     "name": "${{ github.event.client_payload.github.payload.repository.name }}",
                     "clone_url": "${{ github.event.client_payload.github.payload.repository.clone_url }}"
                   }
                 },
                 "base": {
-                  "ref": "${{ steps.prinfo.outputs.base_ref }}"
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.base.ref }}"
                 }
               },
               "repository": {
