@@ -11,4 +11,4 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           commands: example
-          repository: your-github-username/slash-command-processor
+          repository: Aon1840/compose-playground
