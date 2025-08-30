@@ -29,6 +29,36 @@ jobs:
             - By: @${{ github.event.client_payload.github.actor.login }}
             - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
 
+      # ✅ Comment ข้อมูลที่ Jenkins ต้องการ (genericVariables)
+      - name: Post Jenkins Variables
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+          body: |
+            {
+              "action": "reopened",
+              "number": ${{ github.event.client_payload.github.payload.issue.number }},
+              "pull_request": {
+                "title": "${{ github.event.client_payload.github.payload.issue.title }}",
+                "html_url": "${{ github.event.client_payload.github.payload.issue.pull_request.url }}",
+                "head": {
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.head.ref }}",
+                  "repo": {
+                    "name": "${{ github.event.client_payload.github.payload.repository.name }}",
+                    "clone_url": "${{ github.event.client_payload.github.payload.repository.clone_url }}"
+                  }
+                },
+                "base": {
+                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.base.ref }}"
+                }
+              },
+              "repository": {
+                "full_name": "${{ github.event.client_payload.github.payload.repository.full_name }}"
+              }
+            }
+
       # ✅ ดึงข้อมูล PR จาก GitHub API
       - name: Fetch PR Info
         id: pr-info
@@ -54,3 +84,4 @@ jobs:
             🌿 Branch info
             - Source branch: `${{ steps.pr-info.outputs.source_branch }}`
             - Target branch: `${{ steps.pr-info.outputs.target_branch }}`
+      
