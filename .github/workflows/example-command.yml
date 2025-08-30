@@ -16,7 +16,7 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
 
-      # ✅ สร้าง comment ใหม่ (บอกว่า Jenkins rebuild)
+      # ✅ สร้าง comment แจ้ง Jenkins rebuild
       - name: Create new comment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -29,37 +29,7 @@ jobs:
             - By: @${{ github.event.client_payload.github.actor.login }}
             - PR URL: ${{ github.event.client_payload.github.payload.issue.pull_request.url }}
 
-      # ✅ Comment ข้อมูลที่ Jenkins ต้องการ (genericVariables)
-      - name: Post Jenkins Variables
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
-          issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
-          body: |
-            {
-              "action": "reopened",
-              "number": ${{ github.event.client_payload.github.payload.issue.number }},
-              "pull_request": {
-                "title": "${{ github.event.client_payload.github.payload.issue.title }}",
-                "html_url": "${{ github.event.client_payload.github.payload.issue.pull_request.url }}",
-                "head": {
-                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.head.ref }}",
-                  "repo": {
-                    "name": "${{ github.event.client_payload.github.payload.repository.name }}",
-                    "clone_url": "${{ github.event.client_payload.github.payload.repository.clone_url }}"
-                  }
-                },
-                "base": {
-                  "ref": "${{ github.event.client_payload.github.payload.issue.pull_request.base.ref }}"
-                }
-              },
-              "repository": {
-                "full_name": "${{ github.event.client_payload.github.payload.repository.full_name }}"
-              }
-            }
-
-      # ✅ ดึงข้อมูล PR จาก GitHub API
+      # ✅ ดึงข้อมูล PR จาก GitHub API (เพื่อให้ได้ branch)
       - name: Fetch PR Info
         id: pr-info
         run: |
@@ -70,18 +40,37 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/$repo/pulls/$pr_number)
 
+          echo "title=$(echo "$response" | jq -r '.title')" >> $GITHUB_OUTPUT
+          echo "html_url=$(echo "$response" | jq -r '.html_url')" >> $GITHUB_OUTPUT
           echo "source_branch=$(echo "$response" | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo "target_branch=$(echo "$response" | jq -r '.base.ref')" >> $GITHUB_OUTPUT
 
-      # ✅ Comment branch info
-      - name: Post Branch Info
+      # ✅ Comment JSON ก้อนเดียว (มี branch ครบแล้ว)
+      - name: Post Jenkins Variables (with branches)
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.PAT }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
           body: |
-            🌿 Branch info
-            - Source branch: `${{ steps.pr-info.outputs.source_branch }}`
-            - Target branch: `${{ steps.pr-info.outputs.target_branch }}`
-      
+            {
+              "action": "reopened",
+              "number": ${{ github.event.client_payload.github.payload.issue.number }},
+              "pull_request": {
+                "title": "${{ steps.pr-info.outputs.title }}",
+                "html_url": "${{ steps.pr-info.outputs.html_url }}",
+                "head": {
+                  "ref": "${{ steps.pr-info.outputs.source_branch }}",
+                  "repo": {
+                    "name": "${{ github.event.client_payload.github.payload.repository.name }}",
+                    "clone_url": "${{ github.event.client_payload.github.payload.repository.clone_url }}"
+                  }
+                },
+                "base": {
+                  "ref": "${{ steps.pr-info.outputs.target_branch }}"
+                }
+              },
+              "repository": {
+                "full_name": "${{ github.event.client_payload.github.payload.repository.full_name }}"
+              }
+            }
