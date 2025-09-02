@@ -1,0 +1,31 @@
+name: PR Jenkins Rebuild
+
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  preview-json-payload:
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, 'jenkins rebuild')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reply to PR with test message
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const sender = context.actor;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `✅ @${sender} ได้คอมเมนต์ว่า **jenkins rebuild** แล้ว Workflow ทำงานสำเร็จ`
+            });
