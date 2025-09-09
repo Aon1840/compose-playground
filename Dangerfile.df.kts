@@ -9,9 +9,13 @@ danger(args) {
     onGitHub {
         val isTrivial = pullRequest.title.contains("#trivial")
 
+        warn("pr detail : #{pullRequest}")
+        warn("allSourceFiles detail : #{allSourceFiles}")
+        warn("sourceChanges detail : #{sourceChanges}")
+
         // Changelog
         if (!isTrivial && !changelogChanged && sourceChanges != null) {
-            warn("any changes to library code should be reflected in the Changelog.\n\nPlease consider adding a note there and adhere to the [Changelog Guidelines](https://github.com/Moya/contributors/blob/master/Changelog%20Guidelines.md).")
+            error("any changes to library code should be reflected in the Changelog.\n\nPlease consider adding a note there and adhere to the [Changelog Guidelines](https://github.com/Moya/contributors/blob/master/Changelog%20Guidelines.md).")
         }
 
         // Big PR Check
