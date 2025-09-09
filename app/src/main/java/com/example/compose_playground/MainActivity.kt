@@ -14,6 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.compose_playground.ui.theme.ComposeplaygroundTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val test1 = "test1"
+    private var test2 = false
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,6 +33,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
+
+
+
+
+
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
