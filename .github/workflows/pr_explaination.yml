@@ -4,14 +4,17 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  pull-requests: write   # ✅ ให้สิทธิ์เขียน comment บน PR
+
 jobs:
   explain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # ดึง history ทั้งหมด ไม่ใช่ shallow clone
-          ref: ${{ github.head_ref }}  # checkout มาที่ branch ของ PR
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
 
       - name: Get Diff
         run: git diff origin/${{ github.base_ref }}...${{ github.head_ref }} > changes.diff
@@ -20,13 +23,13 @@ jobs:
         id: ai
         run: |
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d "{
               \"model\": \"gpt-4o-mini\",
               \"messages\": [
                 {\"role\": \"system\", \"content\": \"You are a senior engineer explaining pull requests.\"},
-                {\"role\": \"user\", \"content\": \"Summarize these code changes for PR review:\n$(cat changes.diff)\"}
+                {\"role\": \"user\", \"content\": \"Summarize these code changes:\n$(cat changes.diff)\"}
               ]
             }" | jq -r '.choices[0].message.content')
 
