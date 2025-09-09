@@ -1,0 +1,37 @@
+name: PR Explainer
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  explain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Diff
+        run: git diff origin/${{ github.base_ref }}...HEAD > changes.diff
+
+      - name: Explain with AI
+        id: ai
+        run: |
+          RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"model\": \"gpt-4o-mini\",
+              \"messages\": [
+                {\"role\": \"system\", \"content\": \"You are a senior engineer explaining pull requests.\"},
+                {\"role\": \"user\", \"content\": \"Summarize these code changes for PR review:\n$(cat changes.diff)\"}
+              ]
+            }" | jq -r '.choices[0].message.content')
+
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESPONSE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: ${{ steps.ai.outputs.summary }}
