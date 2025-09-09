@@ -9,9 +9,9 @@ danger(args) {
     onGitHub {
         val isTrivial = pullRequest.title.contains("#trivial")
 
-        warn("pr detail : #{pullRequest}")
-        warn("allSourceFiles detail : #{allSourceFiles}")
-        warn("sourceChanges detail : #{sourceChanges}")
+        warn("pr detail : $pullRequest")
+        warn("allSourceFiles detail : $allSourceFiles")
+        warn("sourceChanges detail : $sourceChanges")
 
         // Changelog
         if (!isTrivial && !changelogChanged && sourceChanges != null) {
